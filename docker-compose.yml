@@ -3,17 +3,20 @@ version: '3.8'
 services:
   # Weaviate 服務 (可選，如果你已經有外部 Weaviate 實例，可以移除此服務)
   weaviate:
-    image: semitechnologies/weaviate:1.24.2 # 使用你需要的 Weaviate 版本
+    image: semitechnologies/weaviate:stable-v1.32-c56a5d4
     ports:
       - "8080:8080" # Weaviate RESTful API
       - "50051:50051" # Weaviate gRPC API
-    restart: on-failure
+    # restart: on-failure # 不重啟
     environment:
       QUERY_DEFAULTS_LIMIT: 25
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true' # 允許匿名訪問，生產環境請配置認證
       PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
       DEFAULT_VECTORIZER_MODULE: 'none' # 如果你不使用內建的向量化模組，可以設定為 'none'
       ENABLE_MODULES: '' # 啟用你需要的模組，例如 'text2vec-openai' 等
+      environment:
+      CLUSTER_HOSTNAME: node1
+      TZ: ${TIMEZONE}
       # 如果需要啟用特定模組，例如 OpenAI，需提供 API 金鑰
       # OPENAI_APIKEY: 'YOUR_OPENAI_API_KEY'
     volumes:
