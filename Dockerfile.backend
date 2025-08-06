@@ -1,0 +1,20 @@
+# 使用官方 Python 基礎映像
+FROM python:3.9-slim-buster
+
+# 設定工作目錄
+WORKDIR /app
+
+# 將 requirements.txt 複製到容器中並安裝依賴
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 將後端應用程式程式碼複製到容器中
+COPY backend/ .
+
+# 暴露後端服務的埠號（假設你的 FastAPI/Flask 運行在 8000 埠）
+EXPOSE 8000
+
+# 定義啟動後端服務的命令
+# 這裡假設你的 FastAPI 應用程式在 app.py 中，並使用 uvicorn 運行
+# 如果是 Flask，你需要調整為 Flask 的啟動命令
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

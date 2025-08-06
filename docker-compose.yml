@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Weaviate 服務 (可選，如果你已經有外部 Weaviate 實例，可以移除此服務)
+  weaviate:
+    image: semitechnologies/weaviate:1.24.2 # 使用你需要的 Weaviate 版本
+    ports:
+      - "8080:8080" # Weaviate RESTful API
+      - "50051:50051" # Weaviate gRPC API
+    restart: on-failure
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true' # 允許匿名訪問，生產環境請配置認證
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'none' # 如果你不使用內建的向量化模組，可以設定為 'none'
+      ENABLE_MODULES: '' # 啟用你需要的模組，例如 'text2vec-openai' 等
+      # 如果需要啟用特定模組，例如 OpenAI，需提供 API 金鑰
+      # OPENAI_APIKEY: 'YOUR_OPENAI_API_KEY'
+    volumes:
+      - weaviate_data:/var/lib/weaviate # 持久化 Weaviate 資料
+
+  # 後端服務
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000" # 將容器的 8000 埠映射到主機的 8000 埠
+    volumes:
+      - ./backend:/app # 將主機的 backend 目錄映射到容器的 /app，方便開發時修改程式碼
+    depends_on:
+      - weaviate # 確保後端在 Weaviate 啟動後才啟動 (非硬性依賴，僅啟動順序)
+    environment:
+      # 後端不需要直接的 WEAVIATE_URL 環境變數，因為前端會透過請求傳遞
+      # 但如果後端有其他需要連接 Weaviate 的邏輯，可以設定
+      WEAVIATE_URL: http://weaviate:8080 # Docker 內部網路名稱和埠號
+
+  # 前端服務
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "80:80" # 將容器的 80 埠映射到主機的 80 埠
+    volumes:
+      - ./frontend:/app/frontend # 映射前端程式碼，方便開發時修改
+      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf # 映射 Nginx 配置
+    depends_on:
+      - backend # 確保前端在後端啟動後才啟動
+    environment:
+      # 將 Weaviate URL 傳遞給前端，供前端在啟動時自動連線
+      # 注意：這裡的 WEAVIATE_URL 是給前端 Vue.js 應用程式使用的
+      # 它的值應該是前端可以直接訪問的 Weaviate URL
+      # 如果 Weaviate 服務也在 docker-compose 內，則為 http://localhost:8080
+      # 如果是外部 Weaviate，則為其外部可訪問的 URL
+      WEAVIATE_URL: http://localhost:8080 # 這裡設置為 localhost:8080，因為 Weaviate 服務被映射到主機的 8080 埠
+
+# 定義 Docker 卷，用於持久化 Weaviate 資料
+volumes:
+  weaviate_data:
