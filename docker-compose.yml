@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Weaviate 服務 (可選，如果你已經有外部 Weaviate 實例，可以移除此服務)
   weaviate:
@@ -14,13 +12,14 @@ services:
       PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
       DEFAULT_VECTORIZER_MODULE: 'none' # 如果你不使用內建的向量化模組，可以設定為 'none'
       ENABLE_MODULES: '' # 啟用你需要的模組，例如 'text2vec-openai' 等
-      environment:
       CLUSTER_HOSTNAME: node1
-      TZ: ${TIMEZONE}
+      TZ: '${TIMEZONE}'
       # 如果需要啟用特定模組，例如 OpenAI，需提供 API 金鑰
       # OPENAI_APIKEY: 'YOUR_OPENAI_API_KEY'
     volumes:
       - weaviate_data:/var/lib/weaviate # 持久化 Weaviate 資料
+    networks:
+      docker-weaviate-database-manager:
 
   # 後端服務
   backend:
@@ -36,7 +35,10 @@ services:
     environment:
       # 後端不需要直接的 WEAVIATE_URL 環境變數，因為前端會透過請求傳遞
       # 但如果後端有其他需要連接 Weaviate 的邏輯，可以設定
-      WEAVIATE_URL: http://weaviate:8080 # Docker 內部網路名稱和埠號
+      WEAVIATE_URL: ${WEAVIATE_URL} # Docker 內部網路名稱和埠號
+      TZ: ${TIMEZONE}
+    networks:
+      docker-weaviate-database-manager:
 
   # 前端服務
   frontend:
@@ -56,8 +58,18 @@ services:
       # 它的值應該是前端可以直接訪問的 Weaviate URL
       # 如果 Weaviate 服務也在 docker-compose 內，則為 http://localhost:8080
       # 如果是外部 Weaviate，則為其外部可訪問的 URL
-      WEAVIATE_URL: http://localhost:8080 # 這裡設置為 localhost:8080，因為 Weaviate 服務被映射到主機的 8080 埠
+      WEAVIATE_URL: ${WEAVIATE_URL} # 這裡設置為 localhost:8080，因為 Weaviate 服務被映射到主機的 8080 埠
+      TZ: ${TIMEZONE}
+    networks:
+      docker-weaviate-database-manager:
 
 # 定義 Docker 卷，用於持久化 Weaviate 資料
 volumes:
   weaviate_data:
+
+networks:
+  docker-weaviate-database-manager:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.0.0/24

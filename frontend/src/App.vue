@@ -14,7 +14,7 @@
       <SearchResults :results="searchResults" />
     </div>
 
-    <div class="ui segment">
+    <div class="ui segment" v-if="schemaLoaded">
       <ModifyObject />
     </div>
   </div>
