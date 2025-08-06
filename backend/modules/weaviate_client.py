@@ -6,6 +6,7 @@ def get_weaviate_client(weaviate_url: str):
     Helper function to get Weaviate client.
     """
     try:
+        print('Try to connect to Weaviate...')
         client = weaviate.Client(url=weaviate_url)
         client.is_ready() # Check connection
         return client

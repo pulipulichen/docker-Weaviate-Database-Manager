@@ -2,8 +2,17 @@
   <div id="app" class="ui container">
     <h1 class="ui dividing header">Weaviate 查詢應用程式</h1>
 
-    <div class="ui segment">
-      <ConnectionSettings @schema-loaded="handleSchemaLoaded" />
+    <div class="ui grid">
+      <div class="eight wide column">
+        <div class="ui segment">
+          <ConnectionSettings @schema-loaded="handleSchemaLoaded" />
+        </div>
+      </div>
+      <div class="eight wide column" v-if="schemaLoaded">
+        <div class="ui segment">
+          <ModifyObject />
+        </div>
+      </div>
     </div>
 
     <div class="ui segment" v-if="schemaLoaded">
@@ -12,10 +21,6 @@
 
     <div class="ui segment" v-if="searchResults.length > 0">
       <SearchResults :results="searchResults" />
-    </div>
-
-    <div class="ui segment" v-if="schemaLoaded">
-      <ModifyObject />
     </div>
   </div>
 </template>

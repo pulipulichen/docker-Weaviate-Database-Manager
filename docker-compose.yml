@@ -25,11 +25,12 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile.backend
+      dockerfile: ./backend/Dockerfile.backend
     ports:
       - "8000:8000" # 將容器的 8000 埠映射到主機的 8000 埠
     volumes:
       - ./backend:/app # 將主機的 backend 目錄映射到容器的 /app，方便開發時修改程式碼
+      - ./backend/entrypoint.sh:/usr/local/bin/entrypoint.sh
     depends_on:
       - weaviate # 確保後端在 Weaviate 啟動後才啟動 (非硬性依賴，僅啟動順序)
     environment:
@@ -44,12 +45,12 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile.frontend
+      dockerfile: ./frontend/Dockerfile.frontend
     ports:
-      - "80:80" # 將容器的 80 埠映射到主機的 80 埠
+      - "5173:5173" # 將容器的 5173 埠映射到主機的 5173 埠
     volumes:
       - ./frontend:/app/frontend # 映射前端程式碼，方便開發時修改
-      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf # 映射 Nginx 配置
+      - ./frontend/entrypoint.sh:/usr/local/bin/entrypoint.sh
     depends_on:
       - backend # 確保前端在後端啟動後才啟動
     environment:

@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "start": "sudo docker compose up",
+        "start": "sudo docker compose up --build",
         "weaviate": "sudo docker compose up weaviate -d; sudo docker compose logs weaviate -f"
     }
 }

@@ -17,4 +17,4 @@ EXPOSE 8000
 # 定義啟動後端服務的命令
 # 這裡假設你的 FastAPI 應用程式在 app.py 中，並使用 uvicorn 運行
 # 如果是 Flask，你需要調整為 Flask 的啟動命令
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
